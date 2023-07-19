@@ -11,29 +11,77 @@
 }
 
 .header {
-    display: flex;
-    justify-content: space-evenly;
-    padding-top: 30px;
-
+  display: flex;
+  justify-content: space-evenly;
+  padding-top: 30px;
 
   &__logo {
-    width: 300px;
+    width: 200px;
+    height: 50px;
+    position: relative;
+    top: 10px;
   }
 
   &__ads {
-    width: 425px;
+    width: 450px;
   }
-  &__date{
+  &__date {
     display: flex;
-    width: 300px;
+    width: 25%;
     justify-content: space-between;
     padding-top: 20px;
 
-    p{
-        color: #fff;
-        font-size: 30px;
-        font-weight: 600;
-        font-family: sans-serif;
+    p {
+      color: #fff;
+      font-size: 25px;
+      font-weight: 600;
+      font-family: sans-serif;
     }
   }
+
+  &__calendar {
+    display: flex;
+
+    p {
+      position: relative;
+      left: 10px;
+    }
+  }
+  &__time {
+    display: flex;
+    p {
+      position: relative;
+      left: 10px;
+    }
+  }
+
+
 }
+
+.table{
+  
+    padding-top: 50px;
+    height: 75vh;
+   padding-bottom: 40px;
+    width: 100%;
+
+    table{
+       width: 100%;
+
+      
+      
+    }
+    &__header{
+        display: flex;
+        width: 100%;
+        justify-content: space-around;
+        height: 40px;
+        background: #104273;
+        color: #fff;
+    }
+
+  }
+
+ 
+ 
+
