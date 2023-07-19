@@ -1,0 +1,39 @@
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.mainSection {
+  width: 100vw;
+  height: 100vh;
+  background-color: #145b9f;
+}
+
+.header {
+    display: flex;
+    justify-content: space-evenly;
+    padding-top: 30px;
+
+
+  &__logo {
+    width: 300px;
+  }
+
+  &__ads {
+    width: 425px;
+  }
+  &__date{
+    display: flex;
+    width: 300px;
+    justify-content: space-between;
+    padding-top: 20px;
+
+    p{
+        color: #fff;
+        font-size: 30px;
+        font-weight: 600;
+        font-family: sans-serif;
+    }
+  }
+}
