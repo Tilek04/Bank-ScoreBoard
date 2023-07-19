@@ -3,54 +3,71 @@ import style from "../styles/Tablo.module.scss";
 import logo from "../assets/LOGO.png";
 import ads from "../assets/ads.png";
 import { ClockCircleOutlined, CalendarOutlined } from "@ant-design/icons";
-
-import { Table, Divider } from "antd";
+import { tabloStore } from "../Zustand/store";
 import { Ticker } from "../components/Ticker/Ticker";
+
 const columns = [
-  {
-    title: "Талон",
-    dataIndex: "name",
-    
-  },
-  {
-    title: "Этаж",
-    dataIndex: "age",
-  },
-  {
-    title: "Кабинет",
-    dataIndex: "address",
-  },
-  {
-    title: "Окно",
-    dataIndex: "address",
-  },
-  {
-    title: "Статус",
-    dataIndex: "address",
-  },
-];
-const data = [
-  {
-    key: "1",
-    name: "John Brown",
-    age: 32,
-    address: "New York No. 1 Lake Park",
-  },
-  {
-    key: "2",
-    name: "Jim Green",
-    age: 42,
-    address: "London No. 1 Lake Park",
-  },
-  {
-    key: "3",
-    name: "Joe Black",
-    age: 32,
-    address: "Sydney No. 1 Lake Park",
-  },
-];
+    {
+      title: "Талон",
+      dataIndex: "token",
+    },
+    {
+      title: "Этаж",
+      dataIndex: "branch",
+    },
+    {
+      title: "Кабинет",
+      dataIndex: "id",
+    },
+    {
+      title: "Окно",
+      dataIndex: "queue",
+    },
+    {
+      title: "Статус",
+      dataIndex: "status",
+    },
+  ];
+// const data = [
+//   {
+//     key: "1",
+//     name: "token",
+//     age: 32,
+//     address: "New York No. 1 Lake Park",
+//   },
+//   {
+//     key: "2",
+//     name: "Jim Green",
+//     age: 42,
+//     address: "London No. 1 Lake Park",
+//   },
+//   {
+//     key: "3",
+//     name: "Joe Black",
+//     age: 32,
+//     address: "Sydney No. 1 Lake Park",
+//   },
+// ];
 
 export const Tablo = () => {
+  const getTalons = tabloStore((state) => state.getTalons);
+  const talons = tabloStore((state) => state.talons);
+   const getTalonsLoading = tabloStore((state) => state.getTalonsLoading);
+
+  useEffect(() => {
+    getTalons();
+  }, []);
+
+
+//   useEffect(() => {
+//     // Рекламный код
+//     const adCode = <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3377203553993162"
+//     crossorigin="anonymous"></script>;
+
+//     // Вставка рекламного кода в контейнер
+//     document.getElementById("adContainer").innerHTML = adCode;
+//   }, []);
+
   // Используем состояния для хранения текущей даты и времени
   const [currentDate, setCurrentDate] = useState(new Date());
 
@@ -80,6 +97,7 @@ export const Tablo = () => {
   const formattedTime = `${addLeadingZero(hours)}:${addLeadingZero(
     minutes
   )}:${addLeadingZero(seconds)}`;
+  
 
   return (
     <div className={style.mainSection}>
@@ -99,27 +117,28 @@ export const Tablo = () => {
       </div>
       {/* Таблица */}
       <div className={style.table}>
-  <div className={style.table__header}>
-  {columns.map((column) => (
-                <p className={style.column} key={column.dataIndex}>{column.title}</p>
-              ))}
-  </div>
-<table>
-<tbody>
-            {data.map((item) => (
-              <tr key={item.key}>
-                {columns.map((column) => (
-                  <td key={column.dataIndex}>{item[column.dataIndex]}</td>
-                ))}
-              </tr>
+        <div className={style.table__header}>
+          {columns.map((column) => (
+            <p className={style.column} key={column.dataIndex}>
+              {column.title}
+            </p>
+          ))}
+        </div>
+        <table >
+      <tbody className={style.sheet}>
+        {talons.map((item) => (
+          <tr key={item.id}>
+            {columns.map((column) => (
+              <td className={style.dataIndex} key={column.dataIndex}>{item[column.dataIndex]}</td>
             ))}
-          </tbody>
-</table>
-      
+          </tr>
+        ))}
+      </tbody>
+    </table>
       </div>
 
-<Ticker/>
-
+      <Ticker />
+      {/* <div id="adContainer"></div> */}
     </div>
   );
 };

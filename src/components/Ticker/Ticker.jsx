@@ -3,8 +3,8 @@ import React from "react";
 export const Ticker = () => {
   return (
     <div>
-      <marquee direction="left" bgcolor="#104273" height='40px'>
-        <p style={{color: '#fff', fontSize: '20px', fontFamily: 'sans-serif', paddingTop: '10px'}}>
+      <marquee direction="left" bgcolor="#104273" height='50px'>
+        <p style={{color: '#fff', fontSize: '25px', fontFamily: 'sans-serif', paddingTop: '10px'}}>
          
           "Доверьте свои финансы опытному банку Кыргызстана!   Банк Кыргызстана -
           ваш надежный партнер в достижении финансовых целей!   У нас вы найдете
