@@ -1,11 +1,16 @@
 import { useState } from "react";
-import "./App.css";
+import "./styles/App.scss";
 import Test from "./test";
+import MainRouter from './Router/MainRouter'
+
+
+
 
 function App() {
   return (
     <>
-      <Test />
+ <MainRouter/>
+       
     </>
   );
 }
