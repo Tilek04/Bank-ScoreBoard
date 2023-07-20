@@ -5,6 +5,7 @@ import ads from "../assets/ads.png";
 import { ClockCircleOutlined, CalendarOutlined } from "@ant-design/icons";
 import { tabloStore } from "../Zustand/store";
 import { Ticker } from "../components/Ticker/Ticker";
+import audio from '../assets/audio.mp3'
 
 const columns = [
   {
@@ -32,7 +33,9 @@ const columns = [
 export const Tablo = () => {
   const getTalons = tabloStore((state) => state.getTalons);
   const talons = tabloStore((state) => state.talons);
-  const getTalonsLoading = tabloStore((state) => state.getTalonsLoading);
+
+  const completedTalons = talons.filter((item) => item.status === "completed");
+  const pendingTalons = talons.filter((item) => item.status !== "completed");
 
   useEffect(() => {
     getTalons();
@@ -70,6 +73,7 @@ export const Tablo = () => {
 
   return (
     <div className={style.mainSection}>
+  
       <div className={style.header}>
         <img className={style.header__logo} src={logo} alt="logo" />
         <img className={style.header__ads} src={ads} alt="ads" />
@@ -84,6 +88,10 @@ export const Tablo = () => {
           </div>
         </div>
       </div>
+      <audio preload="auto">
+          <source src={audio} type="audio/mpeg" />
+          Your browser does not support the audio element.
+        </audio>
       {/* Таблица */}
       <div className={style.table}>
         <div className={style.table__header}>
@@ -93,8 +101,9 @@ export const Tablo = () => {
             </p>
           ))}
         </div>
+
         <table>
-          <tbody className={style.sheet}>
+          <tbody>
             {/* Фильтруем элементы по статусу и рендерим только те, у которых статус не "canceled" */}
             {talons
               .filter((item) => item.status !== "canceled")
@@ -103,7 +112,6 @@ export const Tablo = () => {
                   {columns.map((column) => (
                     <td
                       key={column.dataIndex}
-                      // Добавляем класс "completed" для столбца "Статус", если статус "completed"
                       className={`${style.dataIndex} ${
                         (column.dataIndex === "status",
                         "token" && item.status === "completed"
@@ -122,6 +130,7 @@ export const Tablo = () => {
       <div className={style.ticker}>
         <Ticker />
       </div>
+  
     </div>
   );
 };
