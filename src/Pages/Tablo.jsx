@@ -7,66 +7,36 @@ import { tabloStore } from "../Zustand/store";
 import { Ticker } from "../components/Ticker/Ticker";
 
 const columns = [
-    {
-      title: "Талон",
-      dataIndex: "token",
-    },
-    {
-      title: "Этаж",
-      dataIndex: "branch",
-    },
-    {
-      title: "Кабинет",
-      dataIndex: "id",
-    },
-    {
-      title: "Окно",
-      dataIndex: "queue",
-    },
-    {
-      title: "Статус",
-      dataIndex: "status",
-    },
-  ];
-// const data = [
-//   {
-//     key: "1",
-//     name: "token",
-//     age: 32,
-//     address: "New York No. 1 Lake Park",
-//   },
-//   {
-//     key: "2",
-//     name: "Jim Green",
-//     age: 42,
-//     address: "London No. 1 Lake Park",
-//   },
-//   {
-//     key: "3",
-//     name: "Joe Black",
-//     age: 32,
-//     address: "Sydney No. 1 Lake Park",
-//   },
-// ];
+  {
+    title: "Талон",
+    dataIndex: "token",
+  },
+  {
+    title: "Этаж",
+    dataIndex: "branch",
+  },
+  {
+    title: "Кабинет",
+    dataIndex: "id",
+  },
+  {
+    title: "Окно",
+    dataIndex: "queue",
+  },
+  {
+    title: "Статус",
+    dataIndex: "status",
+  },
+];
 
 export const Tablo = () => {
   const getTalons = tabloStore((state) => state.getTalons);
   const talons = tabloStore((state) => state.talons);
-   const getTalonsLoading = tabloStore((state) => state.getTalonsLoading);
+  const getTalonsLoading = tabloStore((state) => state.getTalonsLoading);
 
   useEffect(() => {
     getTalons();
   }, []);
-
-
-//   useEffect(() => {
-//     // Рекламный код
-//     const adCode = <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3377203553993162"
-//     crossorigin="anonymous"></script>;
-
-//     // Вставка рекламного кода в контейнер
-//     document.getElementById("adContainer").innerHTML = adCode;
-//   }, []);
 
   // Используем состояния для хранения текущей даты и времени
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -97,7 +67,6 @@ export const Tablo = () => {
   const formattedTime = `${addLeadingZero(hours)}:${addLeadingZero(
     minutes
   )}:${addLeadingZero(seconds)}`;
-  
 
   return (
     <div className={style.mainSection}>
@@ -124,21 +93,35 @@ export const Tablo = () => {
             </p>
           ))}
         </div>
-        <table >
-      <tbody className={style.sheet}>
-        {talons.map((item) => (
-          <tr key={item.id}>
-            {columns.map((column) => (
-              <td className={style.dataIndex} key={column.dataIndex}>{item[column.dataIndex]}</td>
-            ))}
-          </tr>
-        ))}
-      </tbody>
-    </table>
+        <table>
+          <tbody className={style.sheet}>
+            {/* Фильтруем элементы по статусу и рендерим только те, у которых статус не "canceled" */}
+            {talons
+              .filter((item) => item.status !== "canceled")
+              .map((item) => (
+                <tr key={item.id}>
+                  {columns.map((column) => (
+                    <td
+                      key={column.dataIndex}
+                      // Добавляем класс "completed" для столбца "Статус", если статус "completed"
+                      className={`${style.dataIndex} ${
+                        (column.dataIndex === "status",
+                        "token" && item.status === "completed"
+                          ? style.completed
+                          : "")
+                      }`}>
+                      {item[column.dataIndex]}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+          </tbody>
+        </table>
       </div>
 
-      <Ticker />
-      {/* <div id="adContainer"></div> */}
+      <div className={style.ticker}>
+        <Ticker />
+      </div>
     </div>
   );
 };
