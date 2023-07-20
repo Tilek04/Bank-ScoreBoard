@@ -3,54 +3,44 @@ import style from "../styles/Tablo.module.scss";
 import logo from "../assets/LOGO.png";
 import ads from "../assets/ads.png";
 import { ClockCircleOutlined, CalendarOutlined } from "@ant-design/icons";
-
-import { Table, Divider } from "antd";
+import { tabloStore } from "../Zustand/store";
 import { Ticker } from "../components/Ticker/Ticker";
+import audio from '../assets/audio.mp3'
+
 const columns = [
   {
     title: "Талон",
-    dataIndex: "name",
-    
+    dataIndex: "token",
   },
   {
     title: "Этаж",
-    dataIndex: "age",
+    dataIndex: "branch",
   },
   {
     title: "Кабинет",
-    dataIndex: "address",
+    dataIndex: "id",
   },
   {
     title: "Окно",
-    dataIndex: "address",
+    dataIndex: "queue",
   },
   {
     title: "Статус",
-    dataIndex: "address",
-  },
-];
-const data = [
-  {
-    key: "1",
-    name: "John Brown",
-    age: 32,
-    address: "New York No. 1 Lake Park",
-  },
-  {
-    key: "2",
-    name: "Jim Green",
-    age: 42,
-    address: "London No. 1 Lake Park",
-  },
-  {
-    key: "3",
-    name: "Joe Black",
-    age: 32,
-    address: "Sydney No. 1 Lake Park",
+    dataIndex: "status",
   },
 ];
 
 export const Tablo = () => {
+  const getTalons = tabloStore((state) => state.getTalons);
+  const talons = tabloStore((state) => state.talons);
+
+  const completedTalons = talons.filter((item) => item.status === "completed");
+  const pendingTalons = talons.filter((item) => item.status !== "completed");
+
+  useEffect(() => {
+    getTalons();
+  }, []);
+
   // Используем состояния для хранения текущей даты и времени
   const [currentDate, setCurrentDate] = useState(new Date());
 
@@ -83,6 +73,7 @@ export const Tablo = () => {
 
   return (
     <div className={style.mainSection}>
+  
       <div className={style.header}>
         <img className={style.header__logo} src={logo} alt="logo" />
         <img className={style.header__ads} src={ads} alt="ads" />
@@ -97,29 +88,49 @@ export const Tablo = () => {
           </div>
         </div>
       </div>
+      <audio preload="auto">
+          <source src={audio} type="audio/mpeg" />
+          Your browser does not support the audio element.
+        </audio>
       {/* Таблица */}
       <div className={style.table}>
-  <div className={style.table__header}>
-  {columns.map((column) => (
-                <p className={style.column} key={column.dataIndex}>{column.title}</p>
+        <div className={style.table__header}>
+          {columns.map((column) => (
+            <p className={style.column} key={column.dataIndex}>
+              {column.title}
+            </p>
+          ))}
+        </div>
+
+        <table>
+          <tbody>
+            {/* Фильтруем элементы по статусу и рендерим только те, у которых статус не "canceled" */}
+            {talons
+              .filter((item) => item.status !== "canceled")
+              .map((item) => (
+                <tr key={item.id}>
+                  {columns.map((column) => (
+                    <td
+                      key={column.dataIndex}
+                      className={`${style.dataIndex} ${
+                        (column.dataIndex === "status",
+                        "token" && item.status === "completed"
+                          ? style.completed
+                          : "")
+                      }`}>
+                      {item[column.dataIndex]}
+                    </td>
+                  ))}
+                </tr>
               ))}
-  </div>
-<table>
-<tbody>
-            {data.map((item) => (
-              <tr key={item.key}>
-                {columns.map((column) => (
-                  <td key={column.dataIndex}>{item[column.dataIndex]}</td>
-                ))}
-              </tr>
-            ))}
           </tbody>
-</table>
-      
+        </table>
       </div>
 
-<Ticker/>
-
+      <div className={style.ticker}>
+        <Ticker />
+      </div>
+  
     </div>
   );
 };
