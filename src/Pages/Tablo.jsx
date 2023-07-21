@@ -5,7 +5,7 @@ import ads from "../assets/ads.png";
 import { ClockCircleOutlined, CalendarOutlined } from "@ant-design/icons";
 import { tabloStore } from "../Zustand/store";
 import { Ticker } from "../components/Ticker/Ticker";
-import audio from '../assets/audio.mp3'
+import audio from "../assets/audio.mp3";
 
 const columns = [
   {
@@ -33,13 +33,30 @@ const columns = [
 export const Tablo = () => {
   const getTalons = tabloStore((state) => state.getTalons);
   const talons = tabloStore((state) => state.talons);
+  const [newTalon, setNewTalon] = useState(0);
 
   const completedTalons = talons.filter((item) => item.status === "completed");
   const pendingTalons = talons.filter((item) => item.status !== "completed");
 
   useEffect(() => {
-    getTalons();
-  }, []);
+    const fetchData = async () => {
+      try {
+        await getTalons();
+        console.log(talons);
+        setNewTalon((prevValue) => prevValue + 1);
+      } catch (error) {
+        console.error("Error fetching talons:", error);
+      }
+    };
+
+    fetchData();
+
+    const intervalId = setInterval(fetchData, 5000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [getTalons, talons]);
 
   // Используем состояния для хранения текущей даты и времени
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -73,7 +90,6 @@ export const Tablo = () => {
 
   return (
     <div className={style.mainSection}>
-  
       <div className={style.header}>
         <img className={style.header__logo} src={logo} alt="logo" />
         <img className={style.header__ads} src={ads} alt="ads" />
@@ -89,9 +105,9 @@ export const Tablo = () => {
         </div>
       </div>
       <audio preload="auto">
-          <source src={audio} type="audio/mpeg" />
-          Your browser does not support the audio element.
-        </audio>
+        <source src={audio} type="audio/mpeg" />
+        Your browser does not support the audio element.
+      </audio>
       {/* Таблица */}
       <div className={style.table}>
         <div className={style.table__header}>
@@ -130,7 +146,6 @@ export const Tablo = () => {
       <div className={style.ticker}>
         <Ticker />
       </div>
-  
     </div>
   );
 };
