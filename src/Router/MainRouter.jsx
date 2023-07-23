@@ -5,7 +5,7 @@ import { Tablo } from '../Pages/Tablo'
 function MainRouter() {
   return (
     <Routes>
-        <Route path='/' element={<Tablo/>}/>
+        <Route path='/:id' element={<Tablo/>}/>
     </Routes>
   )
 }

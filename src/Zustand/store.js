@@ -10,10 +10,10 @@ export const tabloStore = create((set, get) => ({
     loginLoading: false,
     getTalonsLoading: false,
  
-    getTalons: async () => {
+    getTalons: async (id) => {
         set({ getTalonsLoading: true });
         try {
-           const res = await axios.get(`${API}/talon/`);
+           const res = await axios.get(`${API}/branch/window/${id}`);
   
            set({
               talons: res.data,
