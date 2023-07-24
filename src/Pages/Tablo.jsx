@@ -28,6 +28,18 @@ const columns = [
   {
     title: "Статус",
     dataIndex: "status",
+    render: (status) => {
+        switch (status) {
+            case "completed":
+              return "завершено";
+            case "waiting":
+              return "Ожидается";
+            case "canceled":
+              return "отменено";
+            default:
+              return status;
+          }
+    }
   },
 ];
 
@@ -136,7 +148,7 @@ export const Tablo = () => {
                           ? style.completed
                           : "")
                       }`}>
-                      {item[column.dataIndex]}
+                       {column.dataIndex === "status" ? column.render(item[column.dataIndex]) : item[column.dataIndex]}
                     </td>
                   ))}
                 </tr>
