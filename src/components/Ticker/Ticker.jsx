@@ -1,25 +1,28 @@
 import React from "react";
+import { useEffect } from "react";
+import { tabloStore } from "../../Zustand/store";
 
 export const Ticker = () => {
+  const getString = tabloStore((state) => state.getString);
+  const tickets = tabloStore((state) => state.tickets);
+
+  useEffect(() => {
+    tabloStore.getState().getString();
+  }, []);
+
   return (
     <div>
       <marquee direction="left" bgcolor="#104273" height="50px">
         <p
           style={{
             color: "#fff",
-            fontSize: "25px",
+            fontSize: "30px",
             fontFamily: "sans-serif",
             paddingTop: "10px",
           }}>
-          "Доверьте свои финансы опытному банку Кыргызстана! Банк Кыргызстана -
-          ваш надежный партнер в достижении финансовых целей! У нас вы найдете
-          лучшие условия для вкладов, кредитов и инвестиций. Ищете телефон для
-          работы и развлечений? Арендуйте топовые модели с гарантированной
-          надежностью от нашего банка! Наслаждайтесь передовыми функциями и
-          сверхскоростным интернетом, не задумываясь о дорогостоящей покупке.
-          Аренда телефонов - удобное решение для бизнеса и личного пользования.
-          Предложение ограничено, так что не упустите свой шанс воспользоваться
-          превосходным оборудованием уже сегодня!
+          {tickets.map((ticket) => (
+            <span key={ticket.id}>{ticket.text}</span>
+          ))}
         </p>
       </marquee>
     </div>

@@ -13,14 +13,7 @@ const columns = [
     title: "Талон",
     dataIndex: "token",
   },
-  {
-    title: "Этаж",
-    dataIndex: "branch",
-  },
-  {
-    title: "Кабинет",
-    dataIndex: "id",
-  },
+
   {
     title: "Окно",
     dataIndex: "queue",
@@ -29,17 +22,17 @@ const columns = [
     title: "Статус",
     dataIndex: "status",
     render: (status) => {
-        switch (status) {
-            case "completed":
-              return "завершено";
-            case "waiting":
-              return "Ожидается";
-            case "canceled":
-              return "отменено";
-            default:
-              return status;
-          }
-    }
+      switch (status) {
+        case "completed":
+          return "завершено";
+        case "waiting":
+          return "Ожидается";
+        case "canceled":
+          return "отменено";
+        default:
+          return status;
+      }
+    },
   },
 ];
 
@@ -52,25 +45,27 @@ export const Tablo = () => {
   const completedTalons = talons.filter((item) => item.status === "completed");
   const pendingTalons = talons.filter((item) => item.status !== "completed");
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        await getTalons(id);
-        console.log(talons);
-        // setNewTalon((prevValue) => prevValue + 1);
-      } catch (error) {
-        console.error("Error fetching talons:", error);
-      }
-    };
+//   useEffect(() => {
+//     const fetchData = async () => {
+//       try {
+//         await getTalons(id);
 
-    fetchData();
+//         console.log(talons);
+//         console.log(tickets);
+//         setNewTalon((prevValue) => prevValue + 1);
+//       } catch (error) {
+//         console.error("Error fetching talons:", error);
+//       }
+//     };
 
-    const intervalId = setInterval(fetchData, 5000);
+//     fetchData();
 
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, [id, talons]);
+//     const intervalId = setInterval(fetchData, 5000);
+
+//     return () => {
+//       clearInterval(intervalId);
+//     };
+//   }, [id, talons]);
 
   // Используем состояния для хранения текущей даты и времени
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -148,7 +143,9 @@ export const Tablo = () => {
                           ? style.completed
                           : "")
                       }`}>
-                       {column.dataIndex === "status" ? column.render(item[column.dataIndex]) : item[column.dataIndex]}
+                      {column.dataIndex === "status"
+                        ? column.render(item[column.dataIndex])
+                        : item[column.dataIndex]}
                     </td>
                   ))}
                 </tr>
