@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import style from "../styles/Tablo.module.scss";
 import logo from "../assets/LOGO.png";
-import ads from "../assets/ads.png";
+import adsv from "../assets/ads.png";
 import { ClockCircleOutlined, CalendarOutlined } from "@ant-design/icons";
 import { tabloStore } from "../Zustand/store";
 import { Ticker } from "../components/Ticker/Ticker";
 import audio from "../assets/audio.mp3";
 import { useParams } from "react-router";
+import { debounce } from "lodash";
 
 const columns = [
   {
@@ -39,33 +40,33 @@ const columns = [
 export const Tablo = () => {
   const { id } = useParams();
   const getTalons = tabloStore((state) => state.getTalons);
+  const ads = tabloStore((state) => state.ads);
   const talons = tabloStore((state) => state.talons);
   const [newTalon, setNewTalon] = useState(0);
 
   const completedTalons = talons.filter((item) => item.status === "completed");
   const pendingTalons = talons.filter((item) => item.status !== "completed");
 
-//   useEffect(() => {
-//     const fetchData = async () => {
-//       try {
-//         await getTalons(id);
+  const fetchDataDebounced = debounce(async () => {
+    try {
+      await getTalons(id);
+      await tabloStore.getState().getAds();
 
-//         console.log(talons);
-//         console.log(tickets);
-//         setNewTalon((prevValue) => prevValue + 1);
-//       } catch (error) {
-//         console.error("Error fetching talons:", error);
-//       }
-//     };
+      setNewTalon((prevValue) => prevValue + 1);
+    } catch (error) {
+      console.error("Error fetching talons:", error);
+    }
+  }, 10000);
 
-//     fetchData();
+  useEffect(() => {
+    fetchDataDebounced();
 
-//     const intervalId = setInterval(fetchData, 5000);
-
-//     return () => {
-//       clearInterval(intervalId);
-//     };
-//   }, [id, talons]);
+    const intervalId = setInterval(fetchDataDebounced, 5000);
+    console.log(talons);
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [id, talons, ads]);
 
   // Используем состояния для хранения текущей даты и времени
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -101,7 +102,15 @@ export const Tablo = () => {
     <div className={style.mainSection}>
       <div className={style.header}>
         <img className={style.header__logo} src={logo} alt="logo" />
-        <img className={style.header__ads} src={ads} alt="ads" />
+
+        {ads.map((ad) => (
+          <img
+            className={style.header__ads}
+            key={ad.id}
+            src={ad.image}
+            alt={ad.title}
+          />
+        ))}
         <div className={style.header__date}>
           <div className={style.header__calendar}>
             <CalendarOutlined style={{ color: "#fff", fontSize: "25px" }} />

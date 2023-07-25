@@ -9,7 +9,8 @@ export const tabloStore = create((set, get) => ({
   employee: {},
   loginLoading: false,
   getTalonsLoading: false,
-  text: [],
+  tickets: [],
+  ads: [],
 
   getTalons: async (id) => {
     set({ getTalonsLoading: true });
@@ -34,6 +35,19 @@ export const tabloStore = create((set, get) => ({
       });
     } catch (error) {
       console.log(error, "ERROR");
+    }
+  },
+
+  getAds: async () => {
+    try {
+      const res = await axios.get(`${API}/branch/get_ad`);
+     
+      set({
+        ads: res.data,
+      });
+   
+    } catch (error) {
+      console.log(error);
     }
   },
 }));
