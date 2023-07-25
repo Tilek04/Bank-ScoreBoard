@@ -11,8 +11,8 @@ export const Ticker = () => {
   }, []);
 
   return (
-    <div>
-      <marquee direction="left" bgcolor="#104273" height="50px">
+    <div style={{marginTop: '30px'}}>
+      <marquee  direction="left" bgcolor="#104273" height="50px">
         <p
           style={{
             color: "#fff",

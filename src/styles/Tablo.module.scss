@@ -6,7 +6,7 @@
 
 .mainSection {
   width: 100vw;
-  height: 100vh;
+  height: 100%;
   background-color: #145b9f;
 }
 
@@ -24,6 +24,7 @@
 
   &__ads {
     width: 450px;
+    height: 120px;
   }
   &__date {
     display: flex;
@@ -37,6 +38,9 @@
       font-weight: 600;
       font-family: sans-serif;
     }
+  }
+  .hidden {
+    display: none;
   }
 
   &__calendar {
@@ -57,7 +61,7 @@
 }
 
 .table {
-  padding-top: 50px;
+  padding-top: 30px;
   height: 75vh;
   padding-bottom: 40px;
   width: 100%;
@@ -76,7 +80,7 @@
 }
 
 .column {
-  font-size: 35px;
+  font-size: 40px;
   font-family: sans-serif;
   display: flex;
   align-items: center;
@@ -84,10 +88,10 @@
 
 .dataIndex {
   color: #fff;
-  font-size: 30px;
+  font-size: 35px;
   font-family: sans-serif;
   text-align: center;
-  padding: 20px 0;
+  padding: 15px 0;
   font-weight: 700;
   width: 200px;
 }

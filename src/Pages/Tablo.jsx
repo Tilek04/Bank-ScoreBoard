@@ -8,6 +8,7 @@ import { Ticker } from "../components/Ticker/Ticker";
 import audio from "../assets/audio.mp3";
 import { useParams } from "react-router";
 import { debounce } from "lodash";
+import { API } from "../utils/utils";
 
 const columns = [
   {
@@ -43,30 +44,35 @@ export const Tablo = () => {
   const ads = tabloStore((state) => state.ads);
   const talons = tabloStore((state) => state.talons);
   const [newTalon, setNewTalon] = useState(0);
+  const [currentAdIndex, setCurrentAdIndex] = useState(0);
+  const [isAdLoaded, setIsAdLoaded] = useState(false);
 
   const completedTalons = talons.filter((item) => item.status === "completed");
   const pendingTalons = talons.filter((item) => item.status !== "completed");
 
+  useEffect(() => {
+    fetchDataDebounced();
+
+    const intervalId = setInterval(fetchDataDebounced, 1000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [id, talons, ads]);
+
   const fetchDataDebounced = debounce(async () => {
     try {
       await getTalons(id);
-      await tabloStore.getState().getAds();
 
       setNewTalon((prevValue) => prevValue + 1);
     } catch (error) {
       console.error("Error fetching talons:", error);
     }
-  }, 10000);
+  }, 3000);
 
   useEffect(() => {
-    fetchDataDebounced();
-
-    const intervalId = setInterval(fetchDataDebounced, 5000);
-    console.log(talons);
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, [id, talons, ads]);
+    tabloStore.getState().getAds();
+  }, []);
 
   // Используем состояния для хранения текущей даты и времени
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -76,9 +82,11 @@ export const Tablo = () => {
   };
 
   useEffect(() => {
-    const intervalId = setInterval(updateDateTime, 1000);
+    const intervalId = setInterval(changeAd, 15000);
 
-    return () => clearInterval(intervalId);
+    return () => {
+      clearInterval(intervalId);
+    };
   }, []);
 
   // Функция для добавления ведущего нуля, если число меньше 10
@@ -98,19 +106,38 @@ export const Tablo = () => {
     minutes
   )}:${addLeadingZero(seconds)}`;
 
+  const changeAd = () => {
+    setIsAdLoaded(false); // Сбросить состояние загрузки изображения перед переключением
+    setCurrentAdIndex((prevIndex) =>
+      prevIndex === ads.length - 1 ? 0 : prevIndex + 1
+    );
+  };
+
+  useEffect(() => {
+    const intervalId = setInterval(changeAd, 8000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, []);
+
+  const handleAdLoad = () => {
+    setIsAdLoaded(true); // Устанавливаем состояние, что изображение загружено
+  };
+
   return (
     <div className={style.mainSection}>
       <div className={style.header}>
         <img className={style.header__logo} src={logo} alt="logo" />
 
-        {ads.map((ad) => (
+        {ads.length > 0 && (
           <img
-            className={style.header__ads}
-            key={ad.id}
-            src={ad.image}
-            alt={ad.title}
+            onLoad={handleAdLoad} // Обработчик события загрузки изображения
+            className={`${style.header__ads} ${!isAdLoaded && style.hidden}`} // Добавляем стиль, чтобы скрыть изображение, пока оно не загружено
+            src={`${API}/${ads[currentAdIndex]?.image}`}
+            alt={ads[currentAdIndex]?.title}
           />
-        ))}
+        )}
         <div className={style.header__date}>
           <div className={style.header__calendar}>
             <CalendarOutlined style={{ color: "#fff", fontSize: "25px" }} />
