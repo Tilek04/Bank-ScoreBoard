@@ -107,23 +107,23 @@ export const Tablo = () => {
   )}:${addLeadingZero(seconds)}`;
 
   const changeAd = () => {
-    setIsAdLoaded(false); // Сбросить состояние загрузки изображения перед переключением
+    setIsAdLoaded(false); // Reset the isAdLoaded state to false before changing the ad
     setCurrentAdIndex((prevIndex) =>
       prevIndex === ads.length - 1 ? 0 : prevIndex + 1
     );
   };
+  console.log("ads:", ads);
+  console.log("currentAdIndex:", currentAdIndex);
 
   useEffect(() => {
-    const intervalId = setInterval(changeAd, 8000);
+    fetchDataDebounced();
+
+    const intervalId = setInterval(fetchDataDebounced, 1000);
 
     return () => {
       clearInterval(intervalId);
     };
-  }, []);
-
-  const handleAdLoad = () => {
-    setIsAdLoaded(true); // Устанавливаем состояние, что изображение загружено
-  };
+  }, [id, talons, ads]);
 
   return (
     <div className={style.mainSection}>
@@ -132,12 +132,17 @@ export const Tablo = () => {
 
         {ads.length > 0 && (
           <img
-            onLoad={handleAdLoad} // Обработчик события загрузки изображения
-            className={`${style.header__ads} ${!isAdLoaded && style.hidden}`} // Добавляем стиль, чтобы скрыть изображение, пока оно не загружено
+            onLoad={() => {
+              if (currentAdIndex === ads.length - 1) {
+                setCurrentAdIndex(0); // Reset to 0 after last image is loaded
+              }
+            }}
+            className={style.header__ads}
             src={`${API}/${ads[currentAdIndex]?.image}`}
             alt={ads[currentAdIndex]?.title}
           />
         )}
+
         <div className={style.header__date}>
           <div className={style.header__calendar}>
             <CalendarOutlined style={{ color: "#fff", fontSize: "25px" }} />
