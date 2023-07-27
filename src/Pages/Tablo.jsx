@@ -9,6 +9,7 @@ import audio from "../assets/audio.mp3";
 import { useParams } from "react-router";
 import { debounce } from "lodash";
 import { API } from "../utils/utils";
+import { useRef } from "react";
 
 const columns = [
   {
@@ -25,8 +26,8 @@ const columns = [
     dataIndex: "status",
     render: (status) => {
       switch (status) {
-        case "completed":
-          return "завершено";
+        case "in service":
+          return "В процессе";
         case "waiting":
           return "Ожидается";
         case "canceled":
@@ -46,11 +47,22 @@ export const Tablo = () => {
   const [newTalon, setNewTalon] = useState(0);
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
   const [isAdLoaded, setIsAdLoaded] = useState(false);
+  const [newTalonSound, setNewTalonSound] = useState(false);
+  const audioRef = useRef(null);
 
   const completedTalons = talons.filter((item) => item.status === "completed");
   const pendingTalons = talons.filter((item) => item.status !== "completed");
 
+  const speakTalonStatus = (talonNumber, windowNumber) => {
+    const message = `Талон номер ${talonNumber} подойдите к окну номер ${windowNumber}`;
+    const utterance = new SpeechSynthesisUtterance(message);
+    speechSynthesis.speak(utterance);
+  };
+
+  //   Вывод Талонов и аудио
   useEffect(() => {
+    const audioElement = new Audio(audio);
+    audioRef.current = audioElement;
     fetchDataDebounced();
 
     const intervalId = setInterval(fetchDataDebounced, 1000);
@@ -70,6 +82,14 @@ export const Tablo = () => {
     }
   }, 3000);
 
+  useEffect(() => {
+    if (newTalon) {
+      audioRef.current.play();
+      setNewTalon(false);
+    }
+  }, [newTalonSound]);
+
+  //   Вывод Рекламы
   useEffect(() => {
     tabloStore.getState().getAds();
   }, []);
@@ -154,7 +174,7 @@ export const Tablo = () => {
           </div>
         </div>
       </div>
-      <audio preload="auto">
+      <audio preload="auto" ref={audioRef}>
         <source src={audio} type="audio/mpeg" />
         Your browser does not support the audio element.
       </audio>
@@ -180,7 +200,7 @@ export const Tablo = () => {
                       key={column.dataIndex}
                       className={`${style.dataIndex} ${
                         (column.dataIndex === "status",
-                        "token" && item.status === "completed"
+                        "token" && item.status === "in service"
                           ? style.completed
                           : "")
                       }`}>
