@@ -54,6 +54,33 @@ export const Tablo = () => {
   const completedTalons = talons.filter((item) => item.status === "completed");
   const pendingTalons = talons.filter((item) => item.status !== "completed");
 
+
+  const updateTalonStatusAndPlayAudio = async (talonId, newStatus) => {
+    try {
+      // Обновляем статус талона в админке с помощью соответствующего API запроса
+      // Здесь вам нужно использовать методы или функции, связанные с админкой вашего сайта
+      // Пример: await updateTalonStatusInAdmin(talonId, newStatus);
+  
+      // После успешного обновления статуса в админке, обновляем статус талона на сайте
+      // Можно использовать функцию, которая обновляет статус талона в вашем стейте или хранилище
+      // Пример: await updateTalonStatusOnSite(talonId, newStatus);
+  
+      // Теперь обновляем состояние `talons`, чтобы отразить изменения статуса талона на вашем сайте
+      await getTalons(id);
+  
+      // Теперь обновляем флаги, чтобы воспроизвести аудио, если статус стал "in service"
+      if (newStatus === "in service") {
+        setIsTalonCalled(true); // Устанавливаем флаг, когда талон вызвали
+        setIsAudioPlayed(false); // Сбрасываем флаг, чтобы аудио могло быть воспроизведено
+        audioRef.current.play(); // Воспроизводим аудио
+      } else {
+        setIsTalonCalled(false); // Сбрасываем флаг, если статус не "in service"
+      }
+    } catch (error) {
+      console.error("Error updating talon status:", error);
+    }
+  };
+
   useEffect(() => {
     // Создаем новый контекст AudioContext
     const audioContext = new (window.AudioContext ||
@@ -156,6 +183,8 @@ export const Tablo = () => {
       clearInterval(intervalId);
     };
   }, []);
+
+ 
 
   // Функция для добавления ведущего нуля, если число меньше 10
   const addLeadingZero = (number) => (number < 10 ? `0${number}` : number);
