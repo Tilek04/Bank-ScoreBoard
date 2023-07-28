@@ -6,14 +6,14 @@
 
 .mainSection {
   width: 100vw;
-  height: 100%;
+  height: 100vh;
   background-color: #145b9f;
 }
 
 .header {
   display: flex;
   justify-content: space-evenly;
-  padding-top: 30px;
+  padding-top: 20px;
 
   &__logo {
     width: 200px;
@@ -24,7 +24,7 @@
 
   &__ads {
     width: 450px;
-    height: 120px;
+    height: 130px;
   }
   &__date {
     display: flex;
@@ -38,9 +38,6 @@
       font-weight: 600;
       font-family: sans-serif;
     }
-  }
-  .hidden {
-    display: none;
   }
 
   &__calendar {
@@ -62,7 +59,7 @@
 
 .table {
   padding-top: 30px;
-  height: 75vh;
+  height: 66vh;
   padding-bottom: 40px;
   width: 100%;
 
@@ -98,5 +95,5 @@
 
 .completed {
   color: #24ff00;
-  font-size: 40px;
+  font-size: 45px;
 }

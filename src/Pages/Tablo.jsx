@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import style from "../styles/Tablo.module.scss";
 import logo from "../assets/LOGO.png";
-import adsv from "../assets/ads.png";
 import { ClockCircleOutlined, CalendarOutlined } from "@ant-design/icons";
 import { tabloStore } from "../Zustand/store";
 import { Ticker } from "../components/Ticker/Ticker";
@@ -9,24 +8,20 @@ import audio from "../assets/audio.mp3";
 import { useParams } from "react-router";
 import { debounce } from "lodash";
 import { API } from "../utils/utils";
+import { useRef } from "react";
 
 const columns = [
   {
     title: "Талон",
     dataIndex: "token",
   },
-
-  {
-    title: "Окно",
-    dataIndex: "queue",
-  },
   {
     title: "Статус",
     dataIndex: "status",
     render: (status) => {
       switch (status) {
-        case "completed":
-          return "завершено";
+        case "in service":
+          return "В процессе";
         case "waiting":
           return "Ожидается";
         case "canceled":
@@ -35,6 +30,11 @@ const columns = [
           return status;
       }
     },
+  },
+
+  {
+    title: "Окно",
+    dataIndex: "window",
   },
 ];
 
@@ -46,30 +46,117 @@ export const Tablo = () => {
   const [newTalon, setNewTalon] = useState(0);
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
   const [isAdLoaded, setIsAdLoaded] = useState(false);
+  const [newTalonSound, setNewTalonSound] = useState(0);
+  const audioRef = useRef(null);
+  const [isTalonCalled, setIsTalonCalled] = useState(false);
+  const [isAudioPlayed, setIsAudioPlayed] = useState(false);
 
   const completedTalons = talons.filter((item) => item.status === "completed");
   const pendingTalons = talons.filter((item) => item.status !== "completed");
 
-  useEffect(() => {
-    fetchDataDebounced();
 
-    const intervalId = setInterval(fetchDataDebounced, 1000);
+  const updateTalonStatusAndPlayAudio = async (talonId, newStatus) => {
+    try {
+      // Обновляем статус талона в админке с помощью соответствующего API запроса
+      // Здесь вам нужно использовать методы или функции, связанные с админкой вашего сайта
+      // Пример: await updateTalonStatusInAdmin(talonId, newStatus);
+  
+      // После успешного обновления статуса в админке, обновляем статус талона на сайте
+      // Можно использовать функцию, которая обновляет статус талона в вашем стейте или хранилище
+      // Пример: await updateTalonStatusOnSite(talonId, newStatus);
+  
+      // Теперь обновляем состояние `talons`, чтобы отразить изменения статуса талона на вашем сайте
+      await getTalons(id);
+  
+      // Теперь обновляем флаги, чтобы воспроизвести аудио, если статус стал "in service"
+      if (newStatus === "in service") {
+        setIsTalonCalled(true); // Устанавливаем флаг, когда талон вызвали
+        setIsAudioPlayed(false); // Сбрасываем флаг, чтобы аудио могло быть воспроизведено
+        audioRef.current.play(); // Воспроизводим аудио
+      } else {
+        setIsTalonCalled(false); // Сбрасываем флаг, если статус не "in service"
+      }
+    } catch (error) {
+      console.error("Error updating talon status:", error);
+    }
+  };
+
+  useEffect(() => {
+    // Создаем новый контекст AudioContext
+    const audioContext = new (window.AudioContext ||
+      window.webkitAudioContext)();
+
+    // Обработчик для пользовательского взаимодействия, например, клика на кнопку
+    const handleClick = () => {
+      // Проверяем, был ли уже воспроизведен звук
+      if (!isAudioPlayed) {
+        // Воспроизводим аудио с помощью AudioContext
+        audioContext.resume().then(() => {
+          const source = audioContext.createMediaElementSource(
+            audioRef.current
+          );
+          source.connect(audioContext.destination);
+          audioRef.current.play();
+          setIsAudioPlayed(true); // Устанавливаем флаг, когда аудио проиграно
+        });
+      }
+    };
+
+    document.addEventListener("click", handleClick);
 
     return () => {
-      clearInterval(intervalId);
+      // Удаляем обработчик при размонтировании компонента
+      document.removeEventListener("click", handleClick);
     };
-  }, [id, talons, ads]);
+  }, [isAudioPlayed]);
+
+  useEffect(() => {
+    // В этом эффекте проверяем изменение статуса талона и включаем аудио, если статус становится "in service"
+    const latestTalon = talons[talons.length - 1];
+
+    if (latestTalon && latestTalon.status === "in service" && !isTalonCalled) {
+      setIsTalonCalled(true); // Устанавливаем флаг, когда талон вызвали
+      setIsAudioPlayed(false); // Сбрасываем флаг, чтобы аудио могло быть воспроизведено в следующий раз
+    } else if (latestTalon && latestTalon.status !== "in service") {
+      setIsTalonCalled(false); // Сбрасываем флаг, если статус не "in service"
+    }
+
+    // Воспроизводим аудио только если талон вызвали и аудио не воспроизводилось ранее
+    if (isTalonCalled && !isAudioPlayed) {
+      audioRef.current.play();
+      setIsAudioPlayed(true); // Устанавливаем флаг, когда аудио проиграно
+    }
+  }, [talons]);
+
+  useEffect(() => {
+    if (newTalonSound) {
+      audioRef.current.play();
+      setNewTalonSound(false); // После проигрывания аудио, сразу же установите newTalonSound в false
+      setIsAudioPlayed(true); // Устанавливаем флаг, когда аудио проиграно
+    }
+  }, [newTalonSound]);
 
   const fetchDataDebounced = debounce(async () => {
     try {
       await getTalons(id);
-
+      const latestTalon = talons[talons.length - 1];
+      if (
+        latestTalon &&
+        latestTalon.status === "in service" &&
+        !isAudioPlayed
+      ) {
+        audioRef.current.play();
+        setIsAudioPlayed(true); // Устанавливаем флаг, когда талон вызвали
+      } else if (latestTalon && latestTalon.status !== "in service") {
+        setIsAudioPlayed(false); // Сбрасываем флаг, если статус не "in service"
+      }
       setNewTalon((prevValue) => prevValue + 1);
     } catch (error) {
       console.error("Error fetching talons:", error);
     }
   }, 3000);
 
+  //   Вывод Рекламы
   useEffect(() => {
     tabloStore.getState().getAds();
   }, []);
@@ -89,6 +176,16 @@ export const Tablo = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const intervalId = setInterval(updateDateTime, 1000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, []);
+
+ 
+
   // Функция для добавления ведущего нуля, если число меньше 10
   const addLeadingZero = (number) => (number < 10 ? `0${number}` : number);
 
@@ -107,23 +204,21 @@ export const Tablo = () => {
   )}:${addLeadingZero(seconds)}`;
 
   const changeAd = () => {
-    setIsAdLoaded(false); // Сбросить состояние загрузки изображения перед переключением
+    setIsAdLoaded(false); // Reset the isAdLoaded state to false before changing the ad
     setCurrentAdIndex((prevIndex) =>
       prevIndex === ads.length - 1 ? 0 : prevIndex + 1
     );
   };
 
   useEffect(() => {
-    const intervalId = setInterval(changeAd, 8000);
+    fetchDataDebounced();
+
+    const intervalId = setInterval(fetchDataDebounced, 1000);
 
     return () => {
       clearInterval(intervalId);
     };
-  }, []);
-
-  const handleAdLoad = () => {
-    setIsAdLoaded(true); // Устанавливаем состояние, что изображение загружено
-  };
+  }, [id, talons, ads]);
 
   return (
     <div className={style.mainSection}>
@@ -132,12 +227,17 @@ export const Tablo = () => {
 
         {ads.length > 0 && (
           <img
-            onLoad={handleAdLoad} // Обработчик события загрузки изображения
-            className={`${style.header__ads} ${!isAdLoaded && style.hidden}`} // Добавляем стиль, чтобы скрыть изображение, пока оно не загружено
+            onLoad={() => {
+              if (currentAdIndex === ads.length - 1) {
+                setCurrentAdIndex(0); // Reset to 0 after last image is loaded
+              }
+            }}
+            className={style.header__ads}
             src={`${API}/${ads[currentAdIndex]?.image}`}
             alt={ads[currentAdIndex]?.title}
           />
         )}
+
         <div className={style.header__date}>
           <div className={style.header__calendar}>
             <CalendarOutlined style={{ color: "#fff", fontSize: "25px" }} />
@@ -149,7 +249,7 @@ export const Tablo = () => {
           </div>
         </div>
       </div>
-      <audio preload="auto">
+      <audio preload="auto" ref={audioRef}>
         <source src={audio} type="audio/mpeg" />
         Your browser does not support the audio element.
       </audio>
@@ -175,7 +275,7 @@ export const Tablo = () => {
                       key={column.dataIndex}
                       className={`${style.dataIndex} ${
                         (column.dataIndex === "status",
-                        "token" && item.status === "completed"
+                        "token" && item.status === "in service"
                           ? style.completed
                           : "")
                       }`}>
