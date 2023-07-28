@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import style from "../styles/Tablo.module.scss";
 import logo from "../assets/LOGO.png";
-import adsv from "../assets/ads.png";
 import { ClockCircleOutlined, CalendarOutlined } from "@ant-design/icons";
 import { tabloStore } from "../Zustand/store";
 import { Ticker } from "../components/Ticker/Ticker";
@@ -15,11 +14,6 @@ const columns = [
   {
     title: "Талон",
     dataIndex: "token",
-  },
-
-  {
-    title: "Окно",
-    dataIndex: "queue",
   },
   {
     title: "Статус",
@@ -37,6 +31,11 @@ const columns = [
       }
     },
   },
+
+  {
+    title: "Окно",
+    dataIndex: "window",
+  },
 ];
 
 export const Tablo = () => {
@@ -47,47 +46,88 @@ export const Tablo = () => {
   const [newTalon, setNewTalon] = useState(0);
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
   const [isAdLoaded, setIsAdLoaded] = useState(false);
-  const [newTalonSound, setNewTalonSound] = useState(false);
+  const [newTalonSound, setNewTalonSound] = useState(0);
   const audioRef = useRef(null);
+  const [isTalonCalled, setIsTalonCalled] = useState(false);
+  const [isAudioPlayed, setIsAudioPlayed] = useState(false);
 
   const completedTalons = talons.filter((item) => item.status === "completed");
   const pendingTalons = talons.filter((item) => item.status !== "completed");
 
-  const speakTalonStatus = (talonNumber, windowNumber) => {
-    const message = `Талон номер ${talonNumber} подойдите к окну номер ${windowNumber}`;
-    const utterance = new SpeechSynthesisUtterance(message);
-    speechSynthesis.speak(utterance);
-  };
-
-  //   Вывод Талонов и аудио
   useEffect(() => {
-    const audioElement = new Audio(audio);
-    audioRef.current = audioElement;
-    fetchDataDebounced();
+    // Создаем новый контекст AudioContext
+    const audioContext = new (window.AudioContext ||
+      window.webkitAudioContext)();
 
-    const intervalId = setInterval(fetchDataDebounced, 1000);
+    // Обработчик для пользовательского взаимодействия, например, клика на кнопку
+    const handleClick = () => {
+      // Проверяем, был ли уже воспроизведен звук
+      if (!isAudioPlayed) {
+        // Воспроизводим аудио с помощью AudioContext
+        audioContext.resume().then(() => {
+          const source = audioContext.createMediaElementSource(
+            audioRef.current
+          );
+          source.connect(audioContext.destination);
+          audioRef.current.play();
+          setIsAudioPlayed(true); // Устанавливаем флаг, когда аудио проиграно
+        });
+      }
+    };
+
+    document.addEventListener("click", handleClick);
 
     return () => {
-      clearInterval(intervalId);
+      // Удаляем обработчик при размонтировании компонента
+      document.removeEventListener("click", handleClick);
     };
-  }, [id, talons, ads]);
+  }, [isAudioPlayed]);
+
+  useEffect(() => {
+    // В этом эффекте проверяем изменение статуса талона и включаем аудио, если статус становится "in service"
+    const latestTalon = talons[talons.length - 1];
+
+    if (latestTalon && latestTalon.status === "in service" && !isTalonCalled) {
+      setIsTalonCalled(true); // Устанавливаем флаг, когда талон вызвали
+      setIsAudioPlayed(false); // Сбрасываем флаг, чтобы аудио могло быть воспроизведено в следующий раз
+    } else if (latestTalon && latestTalon.status !== "in service") {
+      setIsTalonCalled(false); // Сбрасываем флаг, если статус не "in service"
+    }
+
+    // Воспроизводим аудио только если талон вызвали и аудио не воспроизводилось ранее
+    if (isTalonCalled && !isAudioPlayed) {
+      audioRef.current.play();
+      setIsAudioPlayed(true); // Устанавливаем флаг, когда аудио проиграно
+    }
+  }, [talons]);
+
+  useEffect(() => {
+    if (newTalonSound) {
+      audioRef.current.play();
+      setNewTalonSound(false); // После проигрывания аудио, сразу же установите newTalonSound в false
+      setIsAudioPlayed(true); // Устанавливаем флаг, когда аудио проиграно
+    }
+  }, [newTalonSound]);
 
   const fetchDataDebounced = debounce(async () => {
     try {
       await getTalons(id);
-
+      const latestTalon = talons[talons.length - 1];
+      if (
+        latestTalon &&
+        latestTalon.status === "in service" &&
+        !isAudioPlayed
+      ) {
+        audioRef.current.play();
+        setIsAudioPlayed(true); // Устанавливаем флаг, когда талон вызвали
+      } else if (latestTalon && latestTalon.status !== "in service") {
+        setIsAudioPlayed(false); // Сбрасываем флаг, если статус не "in service"
+      }
       setNewTalon((prevValue) => prevValue + 1);
     } catch (error) {
       console.error("Error fetching talons:", error);
     }
   }, 3000);
-
-  useEffect(() => {
-    if (newTalon) {
-      audioRef.current.play();
-      setNewTalon(false);
-    }
-  }, [newTalonSound]);
 
   //   Вывод Рекламы
   useEffect(() => {
@@ -103,6 +143,14 @@ export const Tablo = () => {
 
   useEffect(() => {
     const intervalId = setInterval(changeAd, 15000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, []);
+
+  useEffect(() => {
+    const intervalId = setInterval(updateDateTime, 1000);
 
     return () => {
       clearInterval(intervalId);
@@ -132,8 +180,6 @@ export const Tablo = () => {
       prevIndex === ads.length - 1 ? 0 : prevIndex + 1
     );
   };
-  console.log("ads:", ads);
-  console.log("currentAdIndex:", currentAdIndex);
 
   useEffect(() => {
     fetchDataDebounced();
