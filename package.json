@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@ant-design/icons": "^5.1.4",
+    "@google-cloud/text-to-speech": "^4.2.3",
     "antd": "^5.7.0",
     "axios": "^1.4.0",
     "easytimer": "^1.1.3",
