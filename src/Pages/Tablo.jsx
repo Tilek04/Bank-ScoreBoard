@@ -54,25 +54,36 @@ export const Tablo = () => {
   const completedTalons = talons.filter((item) => item.status === "completed");
   const pendingTalons = talons.filter((item) => item.status !== "completed");
 
+  const speakTalonAndWindow = (talonId, windowNumber) => {
+    const announcement = `Талон номер ${talonId}. Пожалуйста, подойдите к окну номер ${windowNumber}.`;
 
-  const updateTalonStatusAndPlayAudio = async (talonId, newStatus) => {
+    // Проверяем поддержку SpeechSynthesis API
+    if ("speechSynthesis" in window) {
+      const utterance = new SpeechSynthesisUtterance(announcement);
+      window.speechSynthesis.speak(utterance);
+    } else {
+      console.log("SpeechSynthesis API не поддерживается в этом браузере.");
+    }
+  };
+
+  const updateTalonStatusAndPlayAudio = async (
+    talonId,
+    newStatus,
+    windowNumber
+  ) => {
     try {
-      // Обновляем статус талона в админке с помощью соответствующего API запроса
-      // Здесь вам нужно использовать методы или функции, связанные с админкой вашего сайта
-      // Пример: await updateTalonStatusInAdmin(talonId, newStatus);
-  
-      // После успешного обновления статуса в админке, обновляем статус талона на сайте
-      // Можно использовать функцию, которая обновляет статус талона в вашем стейте или хранилище
-      // Пример: await updateTalonStatusOnSite(talonId, newStatus);
-  
-      // Теперь обновляем состояние `talons`, чтобы отразить изменения статуса талона на вашем сайте
-      await getTalons(id);
-  
-      // Теперь обновляем флаги, чтобы воспроизвести аудио, если статус стал "in service"
+      // ... ваш код для обновления статуса талона ...
+
+      // Воспроизводим аудио рингтона
+      audioRef.current.play();
+
+      // Выполняем озвучку талона и окна только если статус стал "in service"
       if (newStatus === "in service") {
         setIsTalonCalled(true); // Устанавливаем флаг, когда талон вызвали
         setIsAudioPlayed(false); // Сбрасываем флаг, чтобы аудио могло быть воспроизведено
-        audioRef.current.play(); // Воспроизводим аудио
+
+        // Выполняем озвучку талона и окна
+        speakTalonAndWindow(talonId, windowNumber);
       } else {
         setIsTalonCalled(false); // Сбрасываем флаг, если статус не "in service"
       }
@@ -82,41 +93,14 @@ export const Tablo = () => {
   };
 
   useEffect(() => {
-    // Создаем новый контекст AudioContext
-    const audioContext = new (window.AudioContext ||
-      window.webkitAudioContext)();
-
-    // Обработчик для пользовательского взаимодействия, например, клика на кнопку
-    const handleClick = () => {
-      // Проверяем, был ли уже воспроизведен звук
-      if (!isAudioPlayed) {
-        // Воспроизводим аудио с помощью AudioContext
-        audioContext.resume().then(() => {
-          const source = audioContext.createMediaElementSource(
-            audioRef.current
-          );
-          source.connect(audioContext.destination);
-          audioRef.current.play();
-          setIsAudioPlayed(true); // Устанавливаем флаг, когда аудио проиграно
-        });
-      }
-    };
-
-    document.addEventListener("click", handleClick);
-
-    return () => {
-      // Удаляем обработчик при размонтировании компонента
-      document.removeEventListener("click", handleClick);
-    };
-  }, [isAudioPlayed]);
-
-  useEffect(() => {
-    // В этом эффекте проверяем изменение статуса талона и включаем аудио, если статус становится "in service"
     const latestTalon = talons[talons.length - 1];
 
     if (latestTalon && latestTalon.status === "in service" && !isTalonCalled) {
       setIsTalonCalled(true); // Устанавливаем флаг, когда талон вызвали
       setIsAudioPlayed(false); // Сбрасываем флаг, чтобы аудио могло быть воспроизведено в следующий раз
+
+      // Выполняем озвучку талона и окна
+      speakTalonAndWindow(latestTalon.token, latestTalon.window);
     } else if (latestTalon && latestTalon.status !== "in service") {
       setIsTalonCalled(false); // Сбрасываем флаг, если статус не "in service"
     }
@@ -128,9 +112,12 @@ export const Tablo = () => {
     }
   }, [talons]);
 
+  // ... (ваш код после этого момента остаются без изменений) ...
+
   useEffect(() => {
     if (newTalonSound) {
       audioRef.current.play();
+
       setNewTalonSound(false); // После проигрывания аудио, сразу же установите newTalonSound в false
       setIsAudioPlayed(true); // Устанавливаем флаг, когда аудио проиграно
     }
@@ -183,8 +170,6 @@ export const Tablo = () => {
       clearInterval(intervalId);
     };
   }, []);
-
- 
 
   // Функция для добавления ведущего нуля, если число меньше 10
   const addLeadingZero = (number) => (number < 10 ? `0${number}` : number);

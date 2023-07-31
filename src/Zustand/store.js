@@ -10,7 +10,10 @@ export const tabloStore = create((set, get) => ({
   loginLoading: false,
   getTalonsLoading: false,
   tickets: [],
+  brunches: [],
   ads: [],
+  address: [],
+  city: [],
 
   getTalons: async (id) => {
     set({ getTalonsLoading: true });
@@ -50,4 +53,19 @@ export const tabloStore = create((set, get) => ({
       console.log(error);
     }
   },
+
+
+  getBranch: async () => {
+   try {
+     const res = await axios.get(`${API}/branch/list`);
+    
+     set({
+       brunches: res.data,
+     });
+  
+   } catch (error) {
+     console.log(error);
+   }
+ },
+
 }));
