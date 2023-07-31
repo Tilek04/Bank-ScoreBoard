@@ -5,6 +5,7 @@ import { tabloStore } from '../Zustand/store';
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { API } from '../utils/utils';
+import LOGO from '../assets/LOGO.png'
 
 export const Main = () => {
   const getBranch = tabloStore((state) => state.getBranch);
@@ -17,10 +18,15 @@ export const Main = () => {
   console.log(brunches);
 
   return (
+
+
     <div className={styles.main__block}>
-      <Row gutter={16}>
+        <div className={styles.main__header}>
+    <img className={styles.main__logo} src={LOGO} alt="logo"/>
+</div>
+      <Row gutter={30}>
       {brunches.map((branch) => (
-          <Col span={8} key={branch.id}>
+          <Col className={styles.main__col} span={7} key={branch.id}>
             <Link to={`/${branch.id}`}>
               <Card title={branch.city} bordered={false}>
                 {branch.address}
