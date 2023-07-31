@@ -56,13 +56,13 @@ export const Tablo = () => {
 
   const speakTalonAndWindow = (talonId, windowNumber) => {
     const announcement = `Талон номер ${talonId}. Пожалуйста, подойдите к окну номер ${windowNumber}.`;
-  
+
     // Проверяем поддержку SpeechSynthesis API
-    if ('speechSynthesis' in window) {
+    if ("speechSynthesis" in window) {
       const utterance = new SpeechSynthesisUtterance(announcement);
       window.speechSynthesis.speak(utterance);
     } else {
-      console.log('SpeechSynthesis API не поддерживается в этом браузере.');
+      console.log("SpeechSynthesis API не поддерживается в этом браузере.");
     }
   };
 
